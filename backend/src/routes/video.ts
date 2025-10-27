@@ -3,7 +3,9 @@ import {
   getVideoInfo,
   getVideos,
   streamVideo,
+  uploadVideo,
 } from "../controllers/videoController";
+import { uploadSingle } from "../middleware/upload";
 
 const videoRouter = Router();
 
@@ -15,5 +17,8 @@ videoRouter.get("/:id/info", getVideoInfo);
 
 // GET /api/video/:id/stream - Stream video file
 videoRouter.get("/:id/stream", streamVideo);
+
+// POST /api/video/upload - Upload a single video file
+videoRouter.post("/upload", uploadSingle, uploadVideo);
 
 export default videoRouter;

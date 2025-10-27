@@ -181,3 +181,46 @@ export const getVideoInfo = async (
     next(error);
   }
 };
+
+export const uploadVideo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({
+        success: false,
+        error: "No video file provided",
+      });
+      return;
+    }
+
+    const file = req.file;
+    const stats = statSync(file.path);
+
+    // Create video object
+    const uploadedVideo = {
+      id: Date.now().toString(), // Temporary ID
+      title: path.parse(file.originalname).name,
+      description: `Uploaded video: ${file.originalname}`,
+      filename: file.filename,
+      duration: 0, // Would need ffprobe to get actual duration
+      size: stats.size,
+      createdAt: stats.birthtime,
+      modifiedAt: stats.mtime,
+      originalName: file.originalname,
+      mimetype: file.mimetype,
+    };
+
+    const response: ApiResponse = {
+      success: true,
+      data: uploadedVideo,
+      message: "Video uploaded successfully",
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
