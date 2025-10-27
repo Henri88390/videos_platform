@@ -1,8 +1,19 @@
 import { Router } from "express";
-import { helloWorld } from "../controllers/videoController";
+import {
+  getVideoInfo,
+  getVideos,
+  streamVideo,
+} from "../controllers/videoController";
 
 const videoRouter = Router();
 
-videoRouter.get("/", helloWorld);
+// GET /api/video - Get list of available videos
+videoRouter.get("/", getVideos);
+
+// GET /api/video/:id/info - Get video information
+videoRouter.get("/:id/info", getVideoInfo);
+
+// GET /api/video/:id/stream - Stream video file
+videoRouter.get("/:id/stream", streamVideo);
 
 export default videoRouter;
