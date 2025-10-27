@@ -199,19 +199,17 @@ export const uploadVideo = async (
     const file = req.file;
     const stats = statSync(file.path);
 
-    // Create video object
-    const uploadedVideo = {
-      id: Date.now().toString(), // Temporary ID
-      title: path.parse(file.originalname).name,
-      description: `Uploaded video: ${file.originalname}`,
-      filename: file.filename,
-      duration: 0, // Would need ffprobe to get actual duration
-      size: stats.size,
-      createdAt: stats.birthtime,
-      modifiedAt: stats.mtime,
-      originalName: file.originalname,
-      mimetype: file.mimetype,
-    };
+    // After upload, refresh the video list to get the correct ID
+    const videos = await getVideoFiles();
+    const uploadedVideo = videos.find((v) => v.filename === file.filename);
+
+    if (!uploadedVideo) {
+      res.status(500).json({
+        success: false,
+        error: "Uploaded video not found in system",
+      });
+      return;
+    }
 
     const response: ApiResponse = {
       success: true,

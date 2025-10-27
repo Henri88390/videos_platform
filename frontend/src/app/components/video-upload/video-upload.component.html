@@ -1,0 +1,161 @@
+<div class="upload-container">
+  <!-- Header -->
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">
+      <span class="back-icon">←</span>
+      Back to Library
+    </button>
+    <h1>📤 Upload Videos</h1>
+  </div>
+
+  <!-- Upload Zone -->
+  <div
+    class="upload-zone"
+    [class.drag-over]="isDragOver"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    (click)="fileInput.click()"
+  >
+    <div class="upload-icon">📁</div>
+    <h3>Drop video files here or click to browse</h3>
+    <p class="upload-info">
+      Supported formats: MP4, AVI, MOV, WMV, FLV, WEBM, MKV<br />
+      Maximum file size: {{ formatFileSize(maxFileSize) }}<br />
+      Maximum {{ maxFiles }} files at once
+    </p>
+
+    <input
+      #fileInput
+      type="file"
+      multiple
+      accept="video/*,.mp4,.avi,.mov,.wmv,.flv,.webm,.mkv"
+      (change)="onFileSelect($event)"
+      style="display: none"
+    />
+  </div>
+
+  <!-- File List -->
+  <div *ngIf="hasAnyFiles()" class="file-list">
+    <div class="file-list-header">
+      <h3>📋 Files to Upload ({{ uploadStatuses.length }})</h3>
+      <div class="action-buttons">
+        <button
+          *ngIf="hasPendingFiles() && !isUploading"
+          class="upload-btn"
+          (click)="uploadFiles()"
+        >
+          🚀 Start Upload
+        </button>
+        <button
+          *ngIf="hasCompletedFiles()"
+          class="clear-btn"
+          (click)="clearCompleted()"
+        >
+          🗑️ Clear Completed
+        </button>
+        <button
+          class="clear-all-btn"
+          (click)="clearAll()"
+          [disabled]="isUploading"
+        >
+          🗑️ Clear All
+        </button>
+      </div>
+    </div>
+
+    <div class="file-items">
+      <div
+        *ngFor="let status of uploadStatuses; let i = index"
+        class="file-item"
+        [class]="'status-' + status.status"
+      >
+        <div class="file-info">
+          <div class="file-icon">{{ getStatusIcon(status.status) }}</div>
+          <div class="file-details">
+            <div class="file-name">{{ status.file.name }}</div>
+            <div class="file-meta">
+              <span class="file-size">{{
+                formatFileSize(status.file.size)
+              }}</span>
+              <span class="file-type">{{
+                status.file.type || "Unknown type"
+              }}</span>
+            </div>
+            <div
+              *ngIf="status.message"
+              class="status-message"
+              [style.color]="getStatusColor(status.status)"
+            >
+              {{ status.message }}
+            </div>
+          </div>
+        </div>
+
+        <div class="file-actions">
+          <div *ngIf="status.status === 'uploading'" class="progress-container">
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                [style.width.%]="status.progress"
+              ></div>
+            </div>
+            <span class="progress-text">{{ status.progress }}%</span>
+          </div>
+
+          <button
+            *ngIf="status.status === 'pending' || status.status === 'error'"
+            class="remove-btn"
+            (click)="removeFile(i)"
+            title="Remove file"
+          >
+            ❌
+          </button>
+
+          <button
+            *ngIf="status.status === 'success' && status.uploadedVideo"
+            class="view-btn"
+            (click)="viewVideo(status.uploadedVideo.id)"
+            title="View uploaded video"
+          >
+            👁️
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Progress Summary -->
+  <div *ngIf="isUploading" class="upload-summary">
+    <h3>📊 Upload Progress</h3>
+    <div class="summary-stats">
+      <div class="stat">
+        <span class="stat-label">Total:</span>
+        <span class="stat-value">{{ uploadStatuses.length }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Completed:</span>
+        <span class="stat-value">{{ completedCount }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Failed:</span>
+        <span class="stat-value">{{ failedCount }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Remaining:</span>
+        <span class="stat-value">{{ remainingCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <div class="tips-section">
+    <h3>💡 Tips</h3>
+    <ul class="tips-list">
+      <li>Drag and drop multiple video files for batch upload</li>
+      <li>Larger files may take longer to upload</li>
+      <li>You can remove files from the queue before uploading</li>
+      <li>Successfully uploaded videos will appear in the main library</li>
+    </ul>
+  </div>
+</div>

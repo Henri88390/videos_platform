@@ -33,6 +33,19 @@ export class VideoService {
   }
 
   /**
+   * Upload a single video file
+   */
+  uploadVideo(file: File): Observable<ApiResponse<Video>> {
+    const formData = new FormData();
+    formData.append('video', file);
+
+    return this.http.post<ApiResponse<Video>>(
+      `${this.baseUrl}/upload`,
+      formData
+    );
+  }
+
+  /**
    * Format file size in human readable format
    */
   formatFileSize(bytes: number): string {

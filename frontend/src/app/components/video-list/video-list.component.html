@@ -1,10 +1,20 @@
 <div class="video-list-container">
   <div class="header">
     <h1>🎬 Video Library</h1>
-    <button class="refresh-btn" (click)="refreshVideos()" [disabled]="loading">
-      <span class="refresh-icon">🔄</span>
-      Refresh
-    </button>
+    <div class="header-actions">
+      <button class="upload-btn" (click)="goToUpload()">
+        <span class="upload-icon">📤</span>
+        Upload Videos
+      </button>
+      <button
+        class="refresh-btn"
+        (click)="refreshVideos()"
+        [disabled]="loading"
+      >
+        <span class="refresh-icon">🔄</span>
+        Refresh
+      </button>
+    </div>
   </div>
 
   <!-- Loading State -->

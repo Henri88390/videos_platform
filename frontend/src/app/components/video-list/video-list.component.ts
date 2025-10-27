@@ -59,4 +59,8 @@ export class VideoListComponent implements OnInit {
   refreshVideos(): void {
     this.loadVideos();
   }
+
+  goToUpload(): void {
+    this.router.navigate(['/upload']);
+  }
 }

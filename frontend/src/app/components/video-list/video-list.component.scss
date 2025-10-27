@@ -19,18 +19,44 @@
     font-size: 2.5em;
   }
 
+  .header-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .upload-btn,
   .refresh-btn {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: #007bff;
-    color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  .upload-btn {
+    background: #28a745;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #218838;
+    }
+
+    .upload-icon {
+      font-size: 16px;
+    }
+  }
+
+  .refresh-btn {
+    background: #007bff;
+    color: white;
 
     &:hover:not(:disabled) {
       background: #0056b3;
@@ -38,7 +64,6 @@
 
     &:disabled {
       background: #6c757d;
-      cursor: not-allowed;
     }
 
     .refresh-icon {
@@ -227,5 +252,16 @@
     flex-direction: column;
     gap: 15px;
     text-align: center;
+
+    .header-actions {
+      flex-direction: column;
+      width: 100%;
+
+      .upload-btn,
+      .refresh-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   }
 }

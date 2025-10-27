@@ -4,8 +4,8 @@ import {
   getVideos,
   streamVideo,
   uploadVideo,
-} from "../controllers/videoController";
-import { uploadSingle } from "../middleware/upload";
+} from "../controllers/videoController.js";
+import { uploadSingle } from "../middleware/upload.js";
 
 const videoRouter = Router();
 
