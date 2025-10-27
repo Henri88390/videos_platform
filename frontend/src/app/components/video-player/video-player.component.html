@@ -1,0 +1,85 @@
+<div class="video-player-container">
+  <!-- Header with back button -->
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">
+      <span class="back-icon">←</span>
+      Back to Library
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading video...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error">
+    <div class="error-icon">⚠️</div>
+    <h3>Error Loading Video</h3>
+    <p>{{ error }}</p>
+    <button (click)="loadVideoInfo()" class="retry-btn">Try Again</button>
+  </div>
+
+  <!-- Video Player -->
+  <div *ngIf="!loading && !error && video" class="video-content">
+    <div class="video-player">
+      <video
+        controls
+        preload="metadata"
+        [src]="streamUrl"
+        (error)="onVideoError()"
+        (loadeddata)="onVideoLoaded()"
+        class="video-element"
+      >
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <!-- Video Information -->
+    <div class="video-info">
+      <h1 class="video-title">{{ video.title }}</h1>
+
+      <div class="video-metadata">
+        <div class="metadata-row">
+          <span class="label">📄 Filename:</span>
+          <span class="value">{{ video.filename }}</span>
+        </div>
+
+        <div class="metadata-row">
+          <span class="label">📊 File Size:</span>
+          <span class="value">{{ formatFileSize(video.size) }}</span>
+        </div>
+
+        <div class="metadata-row">
+          <span class="label">⏱️ Duration:</span>
+          <span class="value">{{ formatDuration(video.duration) }}</span>
+        </div>
+
+        <div class="metadata-row">
+          <span class="label">📅 Created:</span>
+          <span class="value">{{ video.createdAt | date : "medium" }}</span>
+        </div>
+
+        <div class="metadata-row">
+          <span class="label">🔄 Modified:</span>
+          <span class="value">{{ video.modifiedAt | date : "medium" }}</span>
+        </div>
+      </div>
+
+      <div class="video-description">
+        <h3>Description</h3>
+        <p>{{ video.description }}</p>
+      </div>
+
+      <!-- Stream URL for debugging -->
+      <div class="stream-info">
+        <h3>Stream Information</h3>
+        <div class="stream-url">
+          <span class="label">🔗 Stream URL:</span>
+          <code>{{ streamUrl }}</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

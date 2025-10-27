@@ -54,7 +54,7 @@ export const getVideos = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const videos = getVideoFiles();
+    const videos = await getVideoFiles();
     const response: ApiResponse = {
       success: true,
       data: videos,

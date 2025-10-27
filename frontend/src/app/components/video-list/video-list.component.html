@@ -1,0 +1,61 @@
+<div class="video-list-container">
+  <div class="header">
+    <h1>🎬 Video Library</h1>
+    <button class="refresh-btn" (click)="refreshVideos()" [disabled]="loading">
+      <span class="refresh-icon">🔄</span>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading videos...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error">
+    <div class="error-icon">⚠️</div>
+    <h3>Error Loading Videos</h3>
+    <p>{{ error }}</p>
+    <button (click)="refreshVideos()" class="retry-btn">Try Again</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && videos.length === 0" class="empty-state">
+    <div class="empty-icon">📁</div>
+    <h3>No Videos Found</h3>
+    <p>No video files were found in the media/videos directory.</p>
+    <p class="hint">
+      Add some video files to the backend/media/videos folder and refresh.
+    </p>
+  </div>
+
+  <!-- Video Grid -->
+  <div *ngIf="!loading && !error && videos.length > 0" class="video-grid">
+    <div
+      *ngFor="let video of videos"
+      class="video-card"
+      (click)="selectVideo(video)"
+    >
+      <div class="video-thumbnail">
+        <div class="play-overlay">
+          <div class="play-icon">▶️</div>
+        </div>
+        <div class="video-info-overlay">
+          <span class="duration">{{ formatDuration(video.duration) }}</span>
+          <span class="file-size">{{ formatFileSize(video.size) }}</span>
+        </div>
+      </div>
+
+      <div class="video-details">
+        <h3 class="video-title">{{ video.title }}</h3>
+        <p class="video-description">{{ video.description }}</p>
+        <div class="video-metadata">
+          <span class="filename">📄 {{ video.filename }}</span>
+          <span class="date">📅 {{ video.createdAt | date : "short" }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
