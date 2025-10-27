@@ -1,1 +1,78 @@
+# Dependencies
 backend/node_modules
+frontend/node_modules
+
+# Build outputs
+frontend/dist/
+frontend/.angular/
+backend/dist/
+
+# Environment files
+backend/.env
+frontend/.env
+.env
+.env.local
+.env.production
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Angular specific
+frontend/.angular/
+frontend/e2e/
+frontend/cypress/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Media files (if they're large/binary)
+backend/media/videos/*.mp4
+backend/media/videos/*.avi
+backend/media/videos/*.mov
+backend/media/videos/*.wmv
+backend/media/videos/*.flv
+backend/media/videos/*.webm
+backend/media/videos/*.mkv
+
+# Keep README files in media folders
+!backend/media/videos/README.md
+!backend/media/README.md
