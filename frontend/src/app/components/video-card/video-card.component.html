@@ -1,0 +1,31 @@
+<div class="video-card" (click)="selectVideo()">
+  <div class="video-thumbnail">
+    <video
+      class="video-preview"
+      [src]="getVideoStreamUrl(video.id)"
+      muted
+      loop
+      preload="metadata"
+      (mouseenter)="startPreview($event)"
+      (mouseleave)="stopPreview($event)"
+      (loadeddata)="onVideoLoaded($event)"
+      (error)="onVideoError($event)"
+    ></video>
+    <div class="play-overlay">
+      <div class="play-icon">▶️</div>
+    </div>
+    <div class="video-info-overlay">
+      <span class="duration">{{ getFormatDuration(video.duration) }}</span>
+      <span class="file-size">{{ getFormatFileSize(video.size) }}</span>
+    </div>
+  </div>
+
+  <div class="video-details">
+    <h3 class="video-title">{{ video.title }}</h3>
+    <p class="video-description">{{ video.description }}</p>
+    <div class="video-metadata">
+      <span class="filename">📄 {{ video.filename }}</span>
+      <span class="date">📅 {{ video.createdAt | date : "short" }}</span>
+    </div>
+  </div>
+</div>

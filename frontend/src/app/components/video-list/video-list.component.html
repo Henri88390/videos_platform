@@ -43,39 +43,10 @@
 
   <!-- Video Grid -->
   <div *ngIf="!loading && !error && videos.length > 0" class="video-grid">
-    <div
+    <app-video-card
       *ngFor="let video of videos"
-      class="video-card"
-      (click)="selectVideo(video)"
-    >
-      <div class="video-thumbnail">
-        <video
-          class="video-preview"
-          [src]="getVideoStreamUrl(video.id)"
-          muted
-          loop
-          [poster]="getVideoStreamUrl(video.id)"
-          (mouseenter)="startPreview($event)"
-          (mouseleave)="stopPreview($event)"
-          (loadeddata)="onVideoLoaded($event)"
-        ></video>
-        <div class="play-overlay">
-          <div class="play-icon">▶️</div>
-        </div>
-        <div class="video-info-overlay">
-          <span class="duration">{{ formatDuration(video.duration) }}</span>
-          <span class="file-size">{{ formatFileSize(video.size) }}</span>
-        </div>
-      </div>
-
-      <div class="video-details">
-        <h3 class="video-title">{{ video.title }}</h3>
-        <p class="video-description">{{ video.description }}</p>
-        <div class="video-metadata">
-          <span class="filename">📄 {{ video.filename }}</span>
-          <span class="date">📅 {{ video.createdAt | date : "short" }}</span>
-        </div>
-      </div>
-    </div>
+      [video]="video"
+      (onSelectVideo)="selectVideo($event)"
+    />
   </div>
 </div>

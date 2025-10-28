@@ -3,11 +3,12 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Video } from '../../models/video.model';
 import { VideoService } from '../../services/video.service';
+import { VideoCardComponent } from '../video-card/video-card.component';
 
 @Component({
   selector: 'app-video-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, VideoCardComponent],
   templateUrl: './video-list.component.html',
   styleUrl: './video-list.component.scss',
 })
@@ -52,46 +53,11 @@ export class VideoListComponent implements OnInit {
     return this.videoService.formatFileSize(bytes);
   }
 
-  formatDuration(seconds: number): string {
-    return this.videoService.formatDuration(seconds);
-  }
-
   refreshVideos(): void {
     this.loadVideos();
   }
 
   goToUpload(): void {
     this.router.navigate(['/upload']);
-  }
-
-  getVideoStreamUrl(videoId: string): string {
-    return this.videoService.getVideoStreamUrl(videoId);
-  }
-
-  startPreview(event: Event): void {
-    const video = event.target as HTMLVideoElement;
-    if (video && video.readyState >= 2) {
-      // HAVE_CURRENT_DATA
-      video.currentTime = 0; // Start from beginning
-      video.play().catch(() => {
-        // Ignore play errors (autoplay restrictions)
-      });
-    }
-  }
-
-  stopPreview(event: Event): void {
-    const video = event.target as HTMLVideoElement;
-    if (video) {
-      video.pause();
-      video.currentTime = 0; // Reset to beginning
-    }
-  }
-
-  onVideoLoaded(event: Event): void {
-    const video = event.target as HTMLVideoElement;
-    if (video) {
-      // Set to first frame
-      video.currentTime = 0;
-    }
   }
 }
