@@ -63,4 +63,35 @@ export class VideoListComponent implements OnInit {
   goToUpload(): void {
     this.router.navigate(['/upload']);
   }
+
+  getVideoStreamUrl(videoId: string): string {
+    return this.videoService.getVideoStreamUrl(videoId);
+  }
+
+  startPreview(event: Event): void {
+    const video = event.target as HTMLVideoElement;
+    if (video && video.readyState >= 2) {
+      // HAVE_CURRENT_DATA
+      video.currentTime = 0; // Start from beginning
+      video.play().catch(() => {
+        // Ignore play errors (autoplay restrictions)
+      });
+    }
+  }
+
+  stopPreview(event: Event): void {
+    const video = event.target as HTMLVideoElement;
+    if (video) {
+      video.pause();
+      video.currentTime = 0; // Reset to beginning
+    }
+  }
+
+  onVideoLoaded(event: Event): void {
+    const video = event.target as HTMLVideoElement;
+    if (video) {
+      // Set to first frame
+      video.currentTime = 0;
+    }
+  }
 }

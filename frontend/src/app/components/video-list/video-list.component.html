@@ -49,6 +49,16 @@
       (click)="selectVideo(video)"
     >
       <div class="video-thumbnail">
+        <video
+          class="video-preview"
+          [src]="getVideoStreamUrl(video.id)"
+          muted
+          loop
+          [poster]="getVideoStreamUrl(video.id)"
+          (mouseenter)="startPreview($event)"
+          (mouseleave)="stopPreview($event)"
+          (loadeddata)="onVideoLoaded($event)"
+        ></video>
         <div class="play-overlay">
           <div class="play-icon">▶️</div>
         </div>
