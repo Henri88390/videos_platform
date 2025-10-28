@@ -14,7 +14,8 @@ const getVideoFiles = async () => {
       return [];
     }
 
-    const files = await readdir(MEDIA_PATH);
+    // Read directory with explicit UTF-8 encoding and normalize filenames
+    const files = await readdir(MEDIA_PATH, { encoding: "utf8" });
     return files
       .filter((file) => {
         const ext = path.extname(file).toLowerCase();
@@ -31,11 +32,33 @@ const getVideoFiles = async () => {
       .map((file, index) => {
         const filePath = path.join(MEDIA_PATH, file);
         const stats = statSync(filePath);
+
+        // Handle Unicode normalization more aggressively
+        // Convert from NFD (decomposed) to NFC (composed) and clean up
+        let normalizedFile = file;
+        let normalizedTitle = path.parse(file).name;
+
+        try {
+          // Multiple normalization attempts to handle different encoding issues
+          normalizedFile = file.normalize("NFC");
+          normalizedTitle = path.parse(normalizedFile).name.normalize("NFC");
+
+          // Additional cleanup for common encoding issues
+          normalizedTitle = normalizedTitle
+            .replace(/aÌ\u0080/g, "à") // Fix specific "aÌ" issue
+            .replace(/eÌ\u0081/g, "é") // Fix "eÌ" issue
+            .replace(/iÌ\u0088/g, "ì") // Fix other similar issues
+            .replace(/oÌ\u0080/g, "ò")
+            .replace(/uÌ\u0080/g, "ù");
+        } catch (error) {
+          console.warn("Unicode normalization failed for file:", file, error);
+        }
+
         return {
           id: (index + 1).toString(),
-          title: path.parse(file).name,
-          description: `Video file: ${file}`,
-          filename: file,
+          title: normalizedTitle,
+          description: `Video file: ${normalizedFile}`,
+          filename: file, // Keep original filename for filesystem operations
           duration: 0, // Would need ffprobe to get actual duration
           size: stats.size,
           createdAt: stats.birthtime,

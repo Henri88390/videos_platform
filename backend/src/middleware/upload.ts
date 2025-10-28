@@ -5,21 +5,25 @@ import path from "path";
 // Path to media folder
 const UPLOAD_PATH = path.join(process.cwd(), "media", "videos");
 
+// Function to sanitize filename while preserving special characters
+const sanitizeFilename = (filename: string): string => {
+  // Normalize Unicode characters and remove dangerous characters
+  return filename
+    .normalize("NFC") // Normalize to prevent decomposed characters (à vs aÌ)
+    .replace(/[<>:"/\\|?*]/g, "") // Remove dangerous filesystem characters
+    .replace(/\s+/g, " ") // Replace multiple spaces with single space
+    .trim(); // Remove leading/trailing spaces
+};
+
 // Configure multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, UPLOAD_PATH);
   },
   filename: (req, file, cb) => {
-    // Generate unique filename with timestamp
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const fileExtension = path.extname(file.originalname);
-    const fileName =
-      file.originalname.replace(fileExtension, "") +
-      "-" +
-      uniqueSuffix +
-      fileExtension;
-    cb(null, fileName);
+    // Use sanitized original filename (allow duplicates, preserve special characters)
+    const sanitizedName = sanitizeFilename(file.originalname);
+    cb(null, sanitizedName);
   },
 });
 

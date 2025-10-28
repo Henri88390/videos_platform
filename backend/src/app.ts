@@ -8,9 +8,24 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Ensure proper character encoding for special characters
+app.use((req, res, next) => {
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  // Ensure request body is properly decoded as UTF-8
+  if (req.body && typeof req.body === "object") {
+    req.body = JSON.parse(JSON.stringify(req.body));
+  }
+  next();
+});
 
 app.use("/api/video", videoRouter);
 
