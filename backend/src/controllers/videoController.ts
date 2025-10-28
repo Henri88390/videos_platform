@@ -1,75 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { createReadStream, existsSync, statSync } from "fs";
-import { readdir } from "fs/promises";
 import path from "path";
-import { ApiResponse } from "../types";
+import { videoService } from "../services/videoService.js";
+import { ApiResponse } from "../types/index.js";
 
 // Path to media folder
 const MEDIA_PATH = path.join(process.cwd(), "media", "videos");
-
-// Function to get video files from media folder
-const getVideoFiles = async () => {
-  try {
-    if (!existsSync(MEDIA_PATH)) {
-      return [];
-    }
-
-    // Read directory with explicit UTF-8 encoding and normalize filenames
-    const files = await readdir(MEDIA_PATH, { encoding: "utf8" });
-    return files
-      .filter((file) => {
-        const ext = path.extname(file).toLowerCase();
-        return [
-          ".mp4",
-          ".avi",
-          ".mov",
-          ".wmv",
-          ".flv",
-          ".webm",
-          ".mkv",
-        ].includes(ext);
-      })
-      .map((file, index) => {
-        const filePath = path.join(MEDIA_PATH, file);
-        const stats = statSync(filePath);
-
-        // Handle Unicode normalization more aggressively
-        // Convert from NFD (decomposed) to NFC (composed) and clean up
-        let normalizedFile = file;
-        let normalizedTitle = path.parse(file).name;
-
-        try {
-          // Multiple normalization attempts to handle different encoding issues
-          normalizedFile = file.normalize("NFC");
-          normalizedTitle = path.parse(normalizedFile).name.normalize("NFC");
-
-          // Additional cleanup for common encoding issues
-          normalizedTitle = normalizedTitle
-            .replace(/aÌ\u0080/g, "à") // Fix specific "aÌ" issue
-            .replace(/eÌ\u0081/g, "é") // Fix "eÌ" issue
-            .replace(/iÌ\u0088/g, "ì") // Fix other similar issues
-            .replace(/oÌ\u0080/g, "ò")
-            .replace(/uÌ\u0080/g, "ù");
-        } catch (error) {
-          console.warn("Unicode normalization failed for file:", file, error);
-        }
-
-        return {
-          id: (index + 1).toString(),
-          title: normalizedTitle,
-          description: `Video file: ${normalizedFile}`,
-          filename: file, // Keep original filename for filesystem operations
-          duration: 0, // Would need ffprobe to get actual duration
-          size: stats.size,
-          createdAt: stats.birthtime,
-          modifiedAt: stats.mtime,
-        };
-      });
-  } catch (error) {
-    console.error("Error reading video files:", error);
-    return [];
-  }
-};
 
 export const getVideos = async (
   req: Request,
@@ -77,10 +13,60 @@ export const getVideos = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const videos = await getVideoFiles();
+    const videos = await videoService.getAllVideos();
+
+    // Transform database videos to API response format
+    const videoData = videos.map((video) => ({
+      id: video.id,
+      title: video.title,
+      description: video.description || `Video file: ${video.filename}`,
+      filename: video.filename,
+      duration: video.duration,
+      size: video.size,
+      createdAt: video.createdAt,
+      modifiedAt: video.updatedAt,
+    }));
+
     const response: ApiResponse = {
       success: true,
-      data: videos,
+      data: videoData,
+    };
+
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getVideoInfo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const videoId = req.params.id;
+    const video = await videoService.getVideoById(videoId);
+
+    if (!video) {
+      res.status(404).json({
+        success: false,
+        error: "Video not found",
+      });
+      return;
+    }
+
+    const response: ApiResponse = {
+      success: true,
+      data: {
+        id: video.id,
+        title: video.title,
+        description: video.description || `Video file: ${video.filename}`,
+        filename: video.filename,
+        duration: video.duration,
+        size: video.size,
+        createdAt: video.createdAt,
+        modifiedAt: video.updatedAt,
+      },
     };
 
     res.json(response);
@@ -96,8 +82,7 @@ export const streamVideo = async (
 ): Promise<void> => {
   try {
     const videoId = req.params.id;
-    const videos = await getVideoFiles();
-    const video = videos.find((v) => v.id === videoId);
+    const video = await videoService.getVideoById(videoId);
 
     if (!video) {
       res.status(404).json({
@@ -144,62 +129,35 @@ export const streamVideo = async (
       const parts = range.replace(/bytes=/, "").split("-");
       const start = parseInt(parts[0], 10);
       const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-      const chunksize = end - start + 1;
 
-      // Create read stream for the specified range
-      const file = createReadStream(videoPath, { start, end });
+      if (start >= fileSize) {
+        res.status(416).json({
+          success: false,
+          error: "Range not satisfiable",
+        });
+        return;
+      }
 
-      // Set headers for partial content
+      const chunkSize = end - start + 1;
+      const fileStream = createReadStream(videoPath, { start, end });
+
       res.writeHead(206, {
         "Content-Range": `bytes ${start}-${end}/${fileSize}`,
         "Accept-Ranges": "bytes",
-        "Content-Length": chunksize,
+        "Content-Length": chunkSize,
         "Content-Type": contentType,
-        "Cache-Control": "no-cache",
       });
 
-      file.pipe(res);
+      fileStream.pipe(res);
     } else {
-      // No range header, send entire file
+      // Stream entire file
       res.writeHead(200, {
         "Content-Length": fileSize,
         "Content-Type": contentType,
-        "Accept-Ranges": "bytes",
-        "Cache-Control": "no-cache",
       });
 
-      const file = createReadStream(videoPath);
-      file.pipe(res);
+      createReadStream(videoPath).pipe(res);
     }
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getVideoInfo = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const videoId = req.params.id;
-    const videos = await getVideoFiles();
-    const video = videos.find((v) => v.id === videoId);
-
-    if (!video) {
-      res.status(404).json({
-        success: false,
-        error: "Video not found",
-      });
-      return;
-    }
-
-    const response: ApiResponse = {
-      success: true,
-      data: video,
-    };
-
-    res.json(response);
   } catch (error) {
     next(error);
   }
@@ -222,21 +180,55 @@ export const uploadVideo = async (
     const file = req.file;
     const stats = statSync(file.path);
 
-    // After upload, refresh the video list to get the correct ID
-    const videos = await getVideoFiles();
-    const uploadedVideo = videos.find((v) => v.filename === file.filename);
+    // Extract title from filename (without extension)
+    const title = path.parse(file.originalname).name.normalize("NFC");
 
-    if (!uploadedVideo) {
-      res.status(500).json({
-        success: false,
-        error: "Uploaded video not found in system",
-      });
+    // Check if video already exists
+    const existingVideo = await videoService.getVideoByFilename(file.filename);
+    if (existingVideo) {
+      // Return existing video
+      const response: ApiResponse = {
+        success: true,
+        data: {
+          id: existingVideo.id,
+          title: existingVideo.title,
+          description: existingVideo.description,
+          filename: existingVideo.filename,
+          duration: existingVideo.duration,
+          size: existingVideo.size,
+          createdAt: existingVideo.createdAt,
+          modifiedAt: existingVideo.updatedAt,
+        },
+        message: "Video already exists",
+      };
+
+      res.status(200).json(response);
       return;
     }
 
+    // Create new video record in database
+    const newVideo = await videoService.createVideo({
+      title,
+      description: `Uploaded video: ${file.originalname}`,
+      filename: file.filename,
+      originalName: file.originalname,
+      mimetype: file.mimetype,
+      size: stats.size,
+      duration: 0, // Would need ffprobe to get actual duration
+    });
+
     const response: ApiResponse = {
       success: true,
-      data: uploadedVideo,
+      data: {
+        id: newVideo.id,
+        title: newVideo.title,
+        description: newVideo.description,
+        filename: newVideo.filename,
+        duration: newVideo.duration,
+        size: newVideo.size,
+        createdAt: newVideo.createdAt,
+        modifiedAt: newVideo.updatedAt,
+      },
       message: "Video uploaded successfully",
     };
 
