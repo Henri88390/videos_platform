@@ -11,6 +11,7 @@ import { VideoService } from '../../services/video.service';
 })
 export class VideoCardComponent {
   @Input({ required: true }) video!: Video;
+  @Input() showPreview: boolean = true;
   @Output() onSelectVideo = new EventEmitter();
 
   constructor(private videoService: VideoService) {}
@@ -62,5 +63,11 @@ export class VideoCardComponent {
   onVideoError(event: Event): void {
     const video = event.target as HTMLVideoElement;
     console.error('Video error for:', this.video.title, video?.error);
+  }
+
+  getVideoFormat(): string {
+    const filename = this.video.filename || '';
+    const extension = filename.split('.').pop()?.toUpperCase();
+    return extension || 'VIDEO';
   }
 }

@@ -1,6 +1,8 @@
 <div class="video-card" (click)="selectVideo()">
   <div class="video-thumbnail">
+    <!-- Video Preview (when enabled) -->
     <video
+      *ngIf="showPreview"
       class="video-preview"
       [src]="getVideoStreamUrl(video.id)"
       muted
@@ -11,6 +13,13 @@
       (loadeddata)="onVideoLoaded($event)"
       (error)="onVideoError($event)"
     ></video>
+
+    <!-- Static Thumbnail (when previews are disabled) -->
+    <div *ngIf="!showPreview" class="static-thumbnail">
+      <div class="video-icon">🎬</div>
+      <div class="video-format">{{ getVideoFormat() }}</div>
+    </div>
+
     <div class="play-overlay">
       <div class="play-icon">▶️</div>
     </div>

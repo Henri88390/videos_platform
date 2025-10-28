@@ -16,10 +16,17 @@ export class VideoListComponent implements OnInit {
   videos: Video[] = [];
   loading = false;
   error: string | null = null;
+  showPreviews = true; // Default to showing previews
 
   constructor(private videoService: VideoService, private router: Router) {}
 
   ngOnInit(): void {
+    // Load saved preference from localStorage
+    const savedPreference = localStorage.getItem('showVideosPreviews');
+    if (savedPreference !== null) {
+      this.showPreviews = savedPreference === 'true';
+    }
+
     this.loadVideos();
   }
 
@@ -59,5 +66,11 @@ export class VideoListComponent implements OnInit {
 
   goToUpload(): void {
     this.router.navigate(['/upload']);
+  }
+
+  togglePreviews(): void {
+    this.showPreviews = !this.showPreviews;
+    // Store preference in localStorage
+    localStorage.setItem('showVideosPreviews', this.showPreviews.toString());
   }
 }
