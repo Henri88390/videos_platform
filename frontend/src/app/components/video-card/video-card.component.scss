@@ -32,82 +32,8 @@
     transition: transform 0.3s ease;
   }
 
-  .static-thumbnail {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    color: white;
-    z-index: 1;
-
-    .video-icon {
-      font-size: 3em;
-      margin-bottom: 10px;
-      opacity: 0.8;
-    }
-
-    .video-format {
-      font-size: 14px;
-      font-weight: 500;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 4px 8px;
-      border-radius: 4px;
-      opacity: 0.9;
-    }
-  }
-
   &:hover .video-preview {
     transform: scale(1.05);
-  }
-
-  .play-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-    z-index: 2;
-    opacity: 0.8;
-
-    .play-icon {
-      font-size: 2em;
-      margin-left: 5px;
-    }
-  }
-
-  .video-info-overlay {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    z-index: 2;
-
-    .duration,
-    .file-size {
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-  }
-
-  &:hover .play-overlay {
-    background: rgba(0, 0, 0, 0.8);
-    transform: translate(-50%, -50%) scale(1.1);
-    opacity: 1;
   }
 }
 

@@ -13,20 +13,6 @@
       (loadeddata)="onVideoLoaded($event)"
       (error)="onVideoError($event)"
     ></video>
-
-    <!-- Static Thumbnail (when previews are disabled) -->
-    <div *ngIf="!showPreview" class="static-thumbnail">
-      <div class="video-icon">🎬</div>
-      <div class="video-format">{{ getVideoFormat() }}</div>
-    </div>
-
-    <div class="play-overlay">
-      <div class="play-icon">▶️</div>
-    </div>
-    <div class="video-info-overlay">
-      <span class="duration">{{ getFormatDuration(video.duration) }}</span>
-      <span class="file-size">{{ getFormatFileSize(video.size) }}</span>
-    </div>
   </div>
 
   <div class="video-details">
