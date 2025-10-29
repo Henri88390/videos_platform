@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { createReadStream, existsSync, statSync } from "fs";
+import { unlink } from "fs/promises";
 import path from "path";
 import { videoService } from "../services/videoService.js";
 import { ApiResponse } from "../types/index.js";
@@ -233,6 +234,43 @@ export const uploadVideo = async (
     };
 
     res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteVideo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const videoId = req.params.id;
+    const video = await videoService.getVideoById(videoId);
+
+    if (!video) {
+      res.status(404).json({
+        success: false,
+        error: "Video not found",
+      });
+      return;
+    }
+
+    // Delete video record from database
+    await videoService.deleteVideo(videoId);
+
+    const videoPath = path.join(MEDIA_PATH, video.filename);
+    if (existsSync(videoPath)) {
+      await unlink(videoPath);
+    }
+
+    const response: ApiResponse = {
+      success: true,
+      data: null,
+      message: "Video deleted successfully",
+    };
+
+    res.json(response);
   } catch (error) {
     next(error);
   }
