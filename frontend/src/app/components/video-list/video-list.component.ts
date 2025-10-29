@@ -56,6 +56,12 @@ export class VideoListComponent implements OnInit {
     this.router.navigate(['/video', video.id]);
   }
 
+  onVideoDeleted(videoId: string): void {
+    // Remove the deleted video from the local array
+    this.videos = this.videos.filter((video) => video.id !== videoId);
+    console.log(`Video ${videoId} removed from list`);
+  }
+
   formatFileSize(bytes: number): string {
     return this.videoService.formatFileSize(bytes);
   }

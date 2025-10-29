@@ -33,6 +33,14 @@
     <h3 class="video-title">{{ video.title }}</h3>
     <div class="video-metadata">
       <span class="date">📅 {{ video.createdAt | date : "short" }}</span>
+      <button
+        class="delete-btn"
+        (click)="deleteVideo($event)"
+        title="Delete video"
+        type="button"
+      >
+        🗑️ Delete
+      </button>
     </div>
   </div>
 </div>

@@ -46,6 +46,13 @@ export class VideoService {
   }
 
   /**
+   * Delete a video by ID
+   */
+  deleteVideo(videoId: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${videoId}`);
+  }
+
+  /**
    * Format file size in human readable format
    */
   formatFileSize(bytes: number): string {

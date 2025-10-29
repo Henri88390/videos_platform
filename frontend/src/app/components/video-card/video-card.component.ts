@@ -13,6 +13,7 @@ export class VideoCardComponent {
   @Input({ required: true }) video!: Video;
   @Input() showPreview: boolean = true;
   @Output() onSelectVideo = new EventEmitter();
+  @Output() onDeleteVideo = new EventEmitter<string>();
 
   constructor(private videoService: VideoService) {}
 
@@ -29,6 +30,23 @@ export class VideoCardComponent {
 
   selectVideo() {
     this.onSelectVideo.emit(this.video);
+  }
+
+  deleteVideo(event: Event) {
+    event.stopPropagation(); // Prevent card selection when clicking delete
+
+    if (confirm(`Are you sure you want to delete "${this.video.title}"?`)) {
+      this.videoService.deleteVideo(this.video.id).subscribe({
+        next: (response) => {
+          console.log('Video deleted successfully:', response.message);
+          this.onDeleteVideo.emit(this.video.id);
+        },
+        error: (error) => {
+          console.error('Error deleting video:', error);
+          alert('Failed to delete video. Please try again.');
+        },
+      });
+    }
   }
 
   stopPreview(event: Event): void {
