@@ -29,8 +29,10 @@
         preload="metadata"
         [src]="streamUrl"
         (error)="onVideoError()"
-        (loadeddata)="onVideoLoaded()"
+        (progress)="onVideoProgress($event)"
         class="video-element"
+        crossorigin="anonymous"
+        playsinline
       >
         Your browser does not support the video tag.
       </video>

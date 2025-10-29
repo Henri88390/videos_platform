@@ -147,6 +147,9 @@ export const streamVideo = async (
         "Accept-Ranges": "bytes",
         "Content-Length": chunkSize,
         "Content-Type": contentType,
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "http://localhost:4200",
+        "Access-Control-Allow-Headers": "Range",
       });
 
       fileStream.pipe(res);
@@ -155,6 +158,10 @@ export const streamVideo = async (
       res.writeHead(200, {
         "Content-Length": fileSize,
         "Content-Type": contentType,
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "http://localhost:4200",
+        "Access-Control-Allow-Headers": "Range",
       });
 
       createReadStream(videoPath).pipe(res);

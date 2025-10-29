@@ -78,8 +78,14 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
       'Failed to load video. The video file might be corrupted or incompatible.';
   }
 
-  onVideoLoaded(): void {
-    // Video has loaded successfully
-    console.log('Video loaded successfully');
+  onVideoProgress(event: Event): void {
+    // Called when the browser downloads buffered ranges
+    const video = event.target as HTMLVideoElement;
+    if (video && video.buffered.length > 0) {
+      const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+      const duration = video.duration;
+      const bufferedPercent = (bufferedEnd / duration) * 100;
+      console.log(`Buffered: ${bufferedPercent.toFixed(1)}%`);
+    }
   }
 }

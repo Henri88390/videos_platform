@@ -19,12 +19,19 @@ export class VideoCardComponent {
 
   startPreview(event: Event): void {
     const video = event.target as HTMLVideoElement;
-    if (video && video.readyState >= 2) {
-      // HAVE_CURRENT_DATA
-      video.currentTime = 0; // Start from beginning
-      video.play().catch(() => {
-        // Ignore play errors (autoplay restrictions)
-      });
+    if (video) {
+      // Only start loading when user hovers (lazy loading)
+      if (video.readyState === 0) {
+        video.load(); // Start loading the video
+      }
+
+      if (video.readyState >= 2) {
+        // HAVE_CURRENT_DATA
+        video.currentTime = 0; // Start from beginning
+        video.play().catch(() => {
+          // Ignore play errors (autoplay restrictions)
+        });
+      }
     }
   }
 
