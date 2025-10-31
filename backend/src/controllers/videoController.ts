@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { createReadStream, existsSync, statSync } from "fs";
 import { unlink } from "fs/promises";
 import path from "path";
+import { CreateVideoDataSchema } from "../schemas/videoSchemas.js";
 import { videoService } from "../services/videoService.js";
 import { ApiResponse } from "../types/index.js";
 
@@ -45,7 +46,8 @@ export const getVideoInfo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const videoId = req.params.id;
+    // Use validated parameters from middleware
+    const { id: videoId } = req.validatedParams || req.params;
     const video = await videoService.getVideoById(videoId);
 
     if (!video) {
@@ -82,7 +84,8 @@ export const streamVideo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const videoId = req.params.id;
+    // Use validated parameters from middleware
+    const { id: videoId } = req.validatedParams || req.params;
     const video = await videoService.getVideoById(videoId);
 
     if (!video) {
@@ -177,7 +180,10 @@ export const uploadVideo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    if (!req.file) {
+    // Use validated file from middleware
+    const file = req.validatedFile || req.file;
+
+    if (!file) {
       res.status(400).json({
         success: false,
         error: "No video file provided",
@@ -185,11 +191,46 @@ export const uploadVideo = async (
       return;
     }
 
-    const file = req.file;
     const stats = statSync(file.path);
 
-    // Extract title from filename (without extension)
-    const title = path.parse(file.originalname).name.normalize("NFC");
+    // Extract title from filename with comprehensive Unicode normalization
+    let title = path.parse(file.originalname).name;
+
+    try {
+      // Multiple normalization attempts to handle different encoding issues
+      title = title.normalize("NFC");
+
+      // Additional cleanup for common encoding issues
+      title = title
+        .replace(/aÌ\u0080/g, "à") // Fix specific "aÌ" issue
+        .replace(/eÌ\u0081/g, "é") // Fix "eÌ" issue
+        .replace(/iÌ\u0088/g, "ì") // Fix other similar issues
+        .replace(/oÌ\u0080/g, "ò")
+        .replace(/uÌ\u0080/g, "ù")
+        .replace(/AÌ\u0080/g, "À") // Handle uppercase variants
+        .replace(/EÌ\u0081/g, "É")
+        .replace(/IÌ\u0088/g, "Ì")
+        .replace(/OÌ\u0080/g, "Ò")
+        .replace(/UÌ\u0080/g, "Ù")
+        // Fix various apostrophe and quote issues
+        .replace(/â€™/g, "'") // Fix right single quotation mark encoding
+        .replace(/â€˜/g, "'") // Fix left single quotation mark encoding
+        .replace(/â€œ/g, '"') // Fix left double quotation mark encoding
+        .replace(/â€/g, '"') // Fix right double quotation mark encoding
+        .replace(/â€¦/g, "…") // Fix ellipsis encoding
+        .replace(/'/g, "'") // Normalize right single quotation mark to apostrophe
+        .replace(/'/g, "'") // Normalize left single quotation mark to apostrophe
+        .replace(/"/g, '"') // Normalize left double quotation mark
+        .replace(/"/g, '"') // Normalize right double quotation mark
+        .replace(/–/g, "-") // Normalize en dash
+        .replace(/—/g, "-"); // Normalize em dash
+    } catch (error) {
+      console.warn(
+        "Unicode normalization failed for file:",
+        file.originalname,
+        error
+      );
+    }
 
     // Check if video already exists
     const existingVideo = await videoService.getVideoByFilename(file.filename);
@@ -214,8 +255,8 @@ export const uploadVideo = async (
       return;
     }
 
-    // Create new video record in database
-    const newVideo = await videoService.createVideo({
+    // Validate video creation data with Zod
+    const videoData = CreateVideoDataSchema.parse({
       title,
       description: `Uploaded video: ${file.originalname}`,
       filename: file.filename,
@@ -224,6 +265,9 @@ export const uploadVideo = async (
       size: stats.size,
       duration: 0, // Would need ffprobe to get actual duration
     });
+
+    // Create new video record in database
+    const newVideo = await videoService.createVideo(videoData);
 
     const response: ApiResponse = {
       success: true,
@@ -252,7 +296,8 @@ export const deleteVideo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const videoId = req.params.id;
+    // Use validated parameters from middleware
+    const { id: videoId } = req.validatedParams || req.params;
     const video = await videoService.getVideoById(videoId);
 
     if (!video) {

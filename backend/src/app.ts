@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 
 app.use("/api/video", videoRouter);
 
-// Error handling middleware for multer and other errors
+// Error handling middleware for multer, Zod validation, and other errors
 app.use(
   (
     error: any,
@@ -41,6 +41,20 @@ app.use(
     res: express.Response,
     next: express.NextFunction
   ) => {
+    // Handle Zod validation errors
+    if (error.name === "ZodError") {
+      const errors = error.issues.map((issue: any) => ({
+        field: issue.path.join("."),
+        message: issue.message,
+      }));
+
+      return res.status(400).json({
+        success: false,
+        error: "Validation failed",
+        details: errors,
+      });
+    }
+
     if (error.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         success: false,
